@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>درسی کتب - KanzLibrary</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+  font-family:'Noto Nastaliq Urdu', serif;
+  background:#eef2f7;
+  transition:0.3s;
+  color: #111;
+}
+
+/* DARK MODE */
+body.dark{
+  background:#0f172a;
+  color:#e2e8f0;
+}
+
+/* NAVBAR */
+.navbar{
+  direction:ltr;
+  position:sticky;
+  top:0;
+  z-index:1000;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 16px;
+  background:#111;
+}
+
+body.dark .navbar{
+  background:#020617;
+}
+
+.nav-left,.nav-right{
+  display:flex;
+  gap:10px;
+}
+
+.logo{
+  color:#fff;
+  font-weight:bold;
+}
+
+.logo span{
+  color:#3b82f6;
+}
+
+.navbar button{
+  width:40px;
+  height:40px;
+  border:none;
+  border-radius:10px;
+  background:#eee;
+  cursor:pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 18px;
+}
+
+body.dark .navbar button{
+  background:#1e293b;
+  color:#fff;
+}
+
+/* 🔥 STICKY HEADER */
+.sticky-header{
+  position:relative;
+  top:0px;
+  background:inherit;
+  z-index:999;
+  padding-bottom:10px;
+}
+
+.title{
+  text-align:center;
+  padding:15px 10px 5px;
+  font-size:24px;
+}
+
+/* 📱 UPDATED INFO BOX & INDICATOR */
+.info-container {
+  padding: 0 16px;
+  margin-bottom: 10px;
+}
+
+.info-box {
+  background: #fff;
+  border-radius: 18px;
+  padding: 15px 25px 15px 15px; /* Added padding for the indicator on the right */
+  font-size: 14px;
+  line-height: 2;
+  max-height: 100px;
+  overflow-y: auto;
+  text-align: center;
+  direction: ltr;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+body.dark .info-box {
+  background: #1e293b;
+  color: #e2e8f0;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* 🚀 SMOOTH RIGHT-SIDE INDICATOR (Scrollbar) */
+.info-box::-webkit-scrollbar {
+  width: 6px; /* Slightly thicker for better visibility */
+}
+
+.info-box::-webkit-scrollbar-track {
+  background: transparent; /* Makes it look floating */
+  margin: 10px 0; /* Keeps the bar away from the edges */
+}
+
+.info-box::-webkit-scrollbar-thumb {
+  background: #3b82f6; 
+  border-radius: 100px; /* Perfect capsule shape */
+  border: 1px solid transparent; 
+}
+
+body.dark .info-box::-webkit-scrollbar-thumb {
+  background: #3b82f6;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); /* Glow effect in dark mode */
+}
+
+.info-text {
+  text-align: center;
+  font-size: 14px;
+  color: #64748b;
+  margin-top: 5px;
+}
+
+body.dark .info-text {
+  color: #94a3b8;
+}
+
+/* GRID */
+.classes{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:15px;
+  padding:15px;
+}
+
+.class-card{
+  background:#fff;
+  border-radius:18px;
+  padding:25px 10px;
+  text-align:center;
+  text-decoration: none;
+  color: inherit;
+  font-size: 17px;
+  font-weight: bold;
+  box-shadow:0 6px 20px rgba(0,0,0,0.08);
+  transition:0.25s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.class-card:active{
+  transform:scale(0.95);
+}
+
+body.dark .class-card{
+  background:#1e293b;
+}
+
+/* SHARH SECTION */
+.section-title { padding: 10px 20px 5px; font-size: 20px;
+  text-align: center;}
+.special-card {
+  margin: 15px;
+  background: #3b82f6;
+  color: white;
+  border-radius: 18px;
+  padding: 20px;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+  transition: 0.25s;
+}
+.special-card:active { transform: scale(0.97); }
+</style>
+</head>
+
+<body>
+
+<nav class="navbar">
+  <div class="nav-left"><button onclick="goBack()">⬅️</button></div>
+  <div class="logo">📚 Kanz<span>Library</span></div>
+  <div class="nav-right">
+    <button onclick="toggleTheme()" id="themeBtn">🌙</button>
+    <button onclick="goLogin()">👤</button>
+  </div>
+</nav>
+
+<div class="sticky-header">
+  <div class="title">📚 درسی کتب</div>
+  
+  <div class="info-container">
+    <div class="info-box">
+      یہاں ہر جماعت کے مطابق درسی کتب دستیاب ہیں، جنہیں آپ آسانی سے پڑھ اور ڈاؤنلوڈ کر سکتے ہیں۔ ہم مسلسل نئی کتب کا اضافہ کر رہے ہیں۔ کسی بھی مسئلے کی صورت میں آپ ہم سے رابطہ کر سکتے ہیں۔ شکریہ!
+    </div>
+  </div>
+
+  <p class="info-text">اپنی جماعت منتخب کریں</p>
+</div>
+
+<section class="classes">
+    <a href="adadiya.html" class="class-card">جماعت اعدادیہ</a>
+    <a href="ula.html" class="class-card">جماعت اولی</a>
+    <a href="saniya.html" class="class-card">جماعت ثانیہ</a>
+    <a href="salesa.html" class="class-card">جماعت ثالثہ</a>
+    <a href="rabea.html" class="class-card">جماعت رابعہ</a>
+    <a href="khamesa.html" class="class-card">جماعت خامسہ</a>
+    <a href="sadesa.html" class="class-card">جماعت سادسہ</a>
+    <a href="sabea.html" class="class-card">جماعت سابعہ</a>
+    <a href="samena.html" class="class-card">جماعت ثامنہ</a>
+</section>
+
+<h3 class="section-title">اضافی مواد</h3>
+<a href="sharh.html" class="special-card">
+    <h2>📖 شروحات</h2>
+    <p>کتب کی وضاحت اور لغات کے لیے یہاں کلک کریں</p>
+</a>
+
+<script>
+function applyTheme() {
+  const savedTheme = localStorage.getItem("theme");
+  const btn = document.getElementById("themeBtn");
+  if(savedTheme === "dark"){
+    document.body.classList.add("dark");
+    if(btn) btn.textContent = "☀️";
+  } else {
+    document.body.classList.remove("dark");
+    if(btn) btn.textContent = "🌙";
+  }
+}
+applyTheme();
+function toggleTheme(){
+  document.body.classList.contains("dark") ? localStorage.setItem("theme","light") : localStorage.setItem("theme","dark");
+  applyTheme();
+}
+function goBack(){ window.location.href="home.html"; }
+function goLogin(){ window.location.href="login.html"; }
+window.addEventListener("DOMContentLoaded", applyTheme);
+</script>
+
+</body>
+</html>

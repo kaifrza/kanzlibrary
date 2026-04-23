@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>جماعت او لی</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+  font-family:'Noto Nastaliq Urdu', serif;
+  background:#eef2f7;
+  transition:0.3s;
+}
+
+/* DARK MODE */
+body.dark{
+  background:#0f172a;
+  color:#e2e8f0;
+}
+
+/* NAVBAR */
+.navbar{
+  direction:ltr;
+  position:sticky;
+  top:0;
+  z-index:1000;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 16px;
+  background:#111;
+}
+
+body.dark .navbar{
+  background:#020617;
+}
+
+.nav-left,.nav-right{
+  display:flex;
+  gap:10px;
+}
+
+.logo{
+  color:#fff;
+  font-weight:bold;
+}
+
+.logo span{
+  color:#3b82f6;
+}
+
+.navbar button{
+  width:40px;
+  height:40px;
+  border:none;
+  border-radius:10px;
+  background:#eee;
+  cursor:pointer;
+}
+
+body.dark .navbar button{
+  background:#1e293b;
+  color:#fff;
+}
+
+/* 🔥 STICKY HEADER */
+.sticky-header{
+  position:sticky;
+  top:64px;
+  background:inherit;
+  z-index:999;
+  padding-bottom:6px;
+}
+
+/* TITLE (FIXED SPACING) */
+.title{
+  text-align:center;
+  padding:10px 10px 6px;
+  font-size:22px;
+}
+
+/* SEARCH (FIXED SPACING) */
+.search-box{
+  position:relative;
+  padding:0 16px 6px;
+}
+
+.search-box input{
+  width:100%;
+  padding:14px 45px 14px 14px;
+  border-radius:30px;
+  border:none;
+  outline:none;
+  font-size:14px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.05);
+}
+
+body.dark .search-box input{
+  background:#1e293b;
+  color:#fff;
+}
+
+.search-icon{
+  position:absolute;
+  right:25px;
+  top:50%;
+  transform:translateY(-50%);
+}
+
+/* GRID */
+.books{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:15px;
+  padding:15px;
+}
+
+/* CARD */
+.book-card{
+  background:#fff;
+  border-radius:18px;
+  padding:12px;
+  text-align:center;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  min-height:260px;
+  box-shadow:0 6px 20px rgba(0,0,0,0.08);
+  transition:0.25s;
+}
+
+.book-card:active{
+  transform:scale(0.97);
+}
+
+body.dark .book-card{
+  background:#1e293b;
+}
+
+/* IMAGE */
+.book-card img{
+  width:100%;
+  aspect-ratio:1/1;
+  object-fit:cover;
+  border-radius:12px;
+}
+
+/* TITLE */
+.book-title{
+  font-size:16px;
+  font-weight:bold;
+  margin-top:10px;
+  color:#111;
+
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+
+/* AUTHOR */
+.book-author{
+  font-size:13px;
+  color:#64748b;
+  margin-top:2px;
+}
+
+body.dark .book-title{
+  color:#f1f5f9;
+}
+
+body.dark .book-author{
+  color:#94a3b8;
+}
+
+/* LOADER */
+.loader{
+  width:40px;
+  height:40px;
+  border:4px solid #ccc;
+  border-top:4px solid blue;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+  to{transform:rotate(360deg);}
+}
+</style>
+</head>
+
+<body>
+
+<nav class="navbar">
+  <div class="nav-left">
+    <button onclick="goBack()">⬅️</button>
+  </div>
+
+  <div class="logo">📚 Kanz<span>Library</span></div>
+
+  <div class="nav-right">
+    <button onclick="toggleTheme()" id="themeBtn">🌙</button>
+    <button onclick="goLogin()">👤</button>
+  </div>
+</nav>
+
+<!-- 🔥 STICKY HEADER -->
+<div class="sticky-header">
+
+  <div class="title">📚 جماعت سا بعه</div>
+
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input 
+      type="text" 
+      id="searchInput" 
+      placeholder="کتاب تلاش کریں (نام، مصنف...)"
+      oninput="searchBooks()"
+    >
+  </div>
+
+</div>
+
+<div id="bookList" class="books"></div>
+
+<script>
+// APPLY SAVED THEME (runs immediately)
+(function(){
+  const savedTheme = localStorage.getItem("theme");
+  if(savedTheme === "dark"){
+    document.body.classList.add("dark");
+  }
+})();
+const supabaseClient = supabase.createClient(
+  "https://agdyomxstbapgavqglny.supabase.co",
+  "sb_publishable_InC3_deMiUf3LPMliD5fYA_tvOhmbr8"
+);
+
+let allBooks=[];
+
+/* NAV */
+function goBack(){
+  window.location.href="islamic.html";
+}
+
+function goLogin(){
+  alert("Login page coming soon 😄");
+}
+
+/* THEME */
+function toggleTheme(){
+  const btn = document.getElementById("themeBtn");
+
+  document.body.classList.toggle("dark");
+
+  if(document.body.classList.contains("dark")){
+    localStorage.setItem("theme","dark");
+    if(btn) btn.textContent = "☀️";
+  }else{
+    localStorage.setItem("theme","light");
+    if(btn) btn.textContent = "🌙";
+  }
+}
+
+/* LOADING (FIXED CENTER) */
+function showLoading(){
+  document.getElementById("bookList").innerHTML=`
+    <div style="
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      pointer-events:none;
+    ">
+      <div style="
+        position:absolute;
+        left:50%;
+        top:50%;
+        transform:translate(-50%, -50%);
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        text-align:center;
+      ">
+        <div class="loader"></div>
+        <p style="margin-top:10px;">Loading...</p>
+      </div>
+    </div>
+  `;
+}
+
+/* EMPTY (FIXED CENTER) */
+function showEmpty(){
+  document.getElementById("bookList").innerHTML=`
+    <div style="
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      pointer-events:none;
+    ">
+      <div style="
+        position:absolute;
+        left:50%;
+        top:50%;
+        transform:translate(-50%, -50%);
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        text-align:center;
+      ">
+        <div class="loader"></div>
+        <p style="margin-top:10px;">معذرت! کوئی کتاب نہیں ملی</p>
+      </div>
+    </div>
+  `;
+}
+
+/* LOAD BOOKS */
+async function loadBooks(){
+  showLoading();
+
+  const {data}=await supabaseClient
+    .from("Books")
+    .select("*")
+    .eq("Category","sabea");
+
+  allBooks=data||[];
+  renderBooks(allBooks);
+}
+
+/* RENDER */
+function renderBooks(data){
+  const container=document.getElementById("bookList");
+  container.innerHTML="";
+
+  if(!data.length){
+    showEmpty();
+    return;
+  }
+
+  data.forEach(book=>{
+    const card=document.createElement("div");
+    card.className="book-card";
+
+    card.innerHTML=`
+      <img src="${book.cover_url}">
+      <div class="book-title">${book.Title}</div>
+      <div class="book-author">مصنف: ${book.Author}</div>
+    `;
+
+    card.onclick = () => {
+  window.location.href =
+  "book.html?url=" +
+  encodeURIComponent(book.file_url) +
+  "&title=" +
+  encodeURIComponent(book.Title);
+};
+
+    container.appendChild(card);
+  });
+}
+
+/* SEARCH */
+function searchBooks(){
+  const val=document.getElementById("searchInput").value.toLowerCase();
+
+  const filtered=allBooks.filter(book =>
+    (book.Title||"").toLowerCase().includes(val) ||
+    (book.Author||"").toLowerCase().includes(val)
+  );
+
+  renderBooks(filtered);
+}
+
+loadBooks();
+window.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("themeBtn");
+
+  if(localStorage.getItem("theme") === "dark"){
+    document.body.classList.add("dark");
+    if(btn) btn.textContent = "☀️";
+  }else{
+    if(btn) btn.textContent = "🌙";
+  }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>مطالعہ - KanzLibrary</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+  font-family: 'Poppins', sans-serif;
+  background:#eef2f7;
+  transition:0.3s;
+  color: #111;
+  overflow-x: hidden;
+}
+body.dark{ background:#0f172a; color:#fff; }
+
+/* NAVBAR */
+.navbar{
+  direction:ltr;
+  position:sticky;
+  top:0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px 16px;
+  background:#111;
+  color:#fff;
+  z-index:1000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+body.dark .navbar { background: #020617; }
+
+.nav-title{
+  flex:1;
+  text-align:center;
+  direction:rtl;
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 10px;
+}
+.urdu-font { font-family: 'Noto Nastaliq Urdu', serif; line-height: 1.8; font-size: 18px; }
+
+.navbar button{
+  width:40px;
+  height:40px;
+  border:none;
+  border-radius:12px;
+  background:#eee;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: 0.2s;
+}
+.navbar button:active { transform: scale(0.9); }
+body.dark .navbar button{ background:#1e293b; color:#fff; }
+
+/* 💎 DESIGNER TILE-STYLE MENU */
+.menu {
+  position: fixed;
+  top: 65px;
+  right: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-radius: 28px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+  min-width: 160px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Space between "div" tiles */
+  opacity: 0;
+  transform: translateY(-20px) scale(0.95);
+  pointer-events: none;
+  transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 999;
+  border: 1px solid rgba(255,255,255,0.4);
+}
+
+.menu.show { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+
+.menu button {
+  padding: 15px 20px;
+  border: none;
+  background: rgba(0, 0, 0, 0.04); /* Subtle tile background */
+  border-radius: 18px;
+  text-align: right;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  direction: ltr;
+  transition: 0.2s ease;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.menu button:active {
+  background: #3b82f6; /* Kanz Blue highlight */
+  color: #fff !important;
+  transform: scale(0.96);
+}
+
+body.dark .menu {
+  background: rgba(30, 41, 59, 0.95);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+body.dark .menu button { 
+  background: rgba(255, 255, 255, 0.06); 
+  color: #f1f5f9; 
+}
+
+/* JUMP PANEL */
+.jump-panel {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  background: #fff; padding: 25px; border-radius: 24px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.3); z-index: 2001;
+  width: 280px; text-align: center; opacity: 0; pointer-events: none;
+  transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.jump-panel.show { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
+.jump-panel input {
+  width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #eee;
+  text-align: center; font-size: 18px; margin-bottom: 15px; outline: none;
+}
+.jump-panel button { 
+  background: #3b82f6; color: white; border: none; padding: 12px; 
+  border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; 
+}
+body.dark .jump-panel { background: #1e293b; color: white; }
+body.dark .jump-panel input { background: #0f172a; border-color: #334155; color: white; }
+
+.overlay { position: fixed; top:0; left:0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; z-index: 2000; }
+
+/* VIEWER & CANVAS */
+#viewer{ padding: 15px 10px; min-height: 100vh; }
+canvas{ display: block; margin: 0 auto 20px; max-width: 95%; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+
+/* INDICATORS */
+.page-indicator{
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: rgba(17, 24, 39, 0.85); backdrop-filter: blur(5px); color: #fff;
+  padding: 8px 18px; border-radius: 25px; font-size: 12px; z-index: 10; font-family: sans-serif;
+}
+.progress-container{ position: fixed; right: 8px; top: 50%; transform: translateY(-50%); width: 6px; height: 60vh; background: rgba(0,0,0,0.05); border-radius: 10px; }
+.progress-fill{ width: 100%; height: 0%; background: #3b82f6; border-radius: 10px; transition: 0.3s; }
+
+/* TOAST */
+.toast{ 
+  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px); 
+  background: #111; color: #fff; padding: 12px 20px; border-radius: 30px; 
+  font-size: 13px; opacity: 0; transition: 0.3s; z-index: 3000; 
+}
+.toast.show{ opacity: 1; transform: translateX(-50%) translateY(0); }
+body.dark .toast { background: #fff; color: #000; }
+</style>
+</head>
+
+<body>
+
+<div id="overlay" class="overlay" onclick="closeJumpPanel()"></div>
+
+<div class="navbar">
+  <button onclick="history.back()">⬅️</button>
+  <div id="title" class="nav-title">Loading...</div>
+  <div style="display:flex; gap:8px;">
+    <button onclick="toggleTheme()" id="themeBtn">🌙</button>
+    <button onclick="toggleMenu()">⋮</button>
+  </div>
+</div>
+
+<div id="menu" class="menu">
+  <button onclick="download()"><span>📥</span> ڈاؤنلوڈ کریں</button>
+  <button onclick="openJumpPanel()"><span>📄</span> صفحہ پر جائیں</button>
+  <button onclick="bookmarkAlert()"><span>🔖</span> بک مارک</button>
+  <button onclick="share()"><span>📤</span> شیئر کریں</button>
+</div>
+
+<div id="jumpPanel" class="jump-panel">
+  <h3>صفحہ نمبر منتخب کریں</h3>
+  <input type="number" id="pageInput" placeholder="0">
+  <button onclick="executeJump()">صفحہ پر جائیں</button>
+</div>
+
+<div id="viewer">
+  <div id="loader" style="text-align:center; padding-top:100px;">
+    <p>کتاب لوڈ ہو رہی ہے...</p>
+  </div>
+</div>
+
+<div id="pageIndicator" class="page-indicator">صفحہ 1</div>
+<div class="progress-container"><div id="progressFill" class="progress-fill"></div></div>
+<div id="toast" class="toast"></div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const pdfUrl = params.get("url");
+const bookTitle = params.get("title");
+
+// Title Handling
+const titleEl = document.getElementById("title");
+titleEl.textContent = bookTitle || "Book";
+if(/[\u0600-\u06FF]/.test(bookTitle)) titleEl.classList.add("urdu-font");
+
+// Theme Logic
+function applyTheme() {
+  const isDark = localStorage.getItem("theme") === "dark";
+  document.body.classList.toggle("dark", isDark);
+  document.getElementById("themeBtn").textContent = isDark ? "☀️" : "🌙";
+}
+applyTheme();
+
+function toggleTheme(){
+  localStorage.setItem("theme", document.body.classList.contains("dark") ? "light" : "dark");
+  applyTheme();
+}
+
+// PDF Rendering
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+let pdfDoc = null, pages = [];
+
+if(pdfUrl) {
+    pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
+      pdfDoc = pdf;
+      renderPages();
+    }).catch(() => showToast("❌ PDF لوڈ کرنے میں مسئلہ ہوا"));
+}
+
+async function renderPages(){
+  const viewer = document.getElementById("viewer");
+  for(let i=1; i<=pdfDoc.numPages; i++){
+    const page = await pdfDoc.getPage(i);
+    const viewport = page.getViewport({scale: 1.5});
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = viewport.width; canvas.height = viewport.height;
+    await page.render({canvasContext: ctx, viewport}).promise;
+    if(i === 1) document.getElementById("loader").remove();
+    viewer.appendChild(canvas);
+    pages.push(canvas);
+  }
+}
+
+// Scroll interaction: AUTO-CLOSE MENU
+window.addEventListener("scroll", () => {
+  const menu = document.getElementById("menu");
+  if(menu.classList.contains("show")) menu.classList.remove("show");
+
+  let current = 1;
+  pages.forEach((c, i) => { if(c.getBoundingClientRect().top < window.innerHeight/2) current = i + 1; });
+  if(pdfDoc) {
+    document.getElementById("pageIndicator").textContent = `صفحہ ${current} / ${pdfDoc.numPages}`;
+    document.getElementById("progressFill").style.height = (current / pdfDoc.numPages * 100) + "%";
+  }
+});
+
+function toggleMenu(){ document.getElementById("menu").classList.toggle("show"); }
+
+function openJumpPanel(){
+  document.getElementById("menu").classList.remove("show");
+  document.getElementById("overlay").style.display = "block";
+  document.getElementById("jumpPanel").classList.add("show");
+}
+
+function closeJumpPanel(){
+  document.getElementById("overlay").style.display = "none";
+  document.getElementById("jumpPanel").classList.remove("show");
+}
+
+function executeJump(){
+  const val = document.getElementById("pageInput").value;
+  const pageNum = parseInt(val);
+  if(!pageNum || pageNum < 1 || pageNum > pdfDoc.numPages) {
+    showToast(`❌ غلط صفحہ! براہ کرم 1 سے ${pdfDoc.numPages} کے درمیان منتخب کریں`);
+    return;
+  }
+  pages[pageNum-1].scrollIntoView({behavior: "smooth"});
+  closeJumpPanel();
+}
+
+function bookmarkAlert() {
+  document.getElementById("menu").classList.remove("show");
+  alert("بک مارک کا فیچر جلد آ رہا ہے!");
+}
+
+function showToast(msg){
+  const t = document.getElementById("toast"); t.textContent = msg;
+  t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 3000);
+}
+
+function download() {
+  const link = document.createElement('a');
+  link.href = pdfUrl;
+  link.download = bookTitle || 'download.pdf'; // Forces the browser to download
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+  function share() {
+  if (navigator.share) {
+    navigator.share({
+      title: bookTitle,
+      url: window.location.href // This shares the specific book link
+    }).catch(() => console.log("Share cancelled"));
+  } else {
+    // Backup: If the browser doesn't support sharing, just copy the link
+    navigator.clipboard.writeText(window.location.href);
+    showToast("Link copied to clipboard!");
+  }
+}
+</script>
+
+</body>
+</html>
